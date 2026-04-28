@@ -3,11 +3,12 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt update && apt install -y \
-    curl wget bash iproute2 iptables ca-certificates unzip \
+    curl wget bash iproute2 iptables ca-certificates \
     && apt clean
 
 WORKDIR /app
 
+COPY config.yaml /etc/hysteria/config.yaml
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
