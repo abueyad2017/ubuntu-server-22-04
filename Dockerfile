@@ -1,17 +1,25 @@
-FROM alpine:3.20
+FROM teddysun/xray:latest
 
-RUN apk add --no-cache \
-    curl \
-    bash \
-    openssl
+# إعداد المتغيرات البيئية الافتراضية
+ENV PORT=443
+ENV UUID=12345678-1234-1234-1234-1234567890ab
 
-WORKDIR /app
+# إنشاء ملف الإعدادات
+RUN printf '{\n\
+    "inbounds": [{\n\
+        "port": %s,\n\
+        "protocol": "vless",\n\
+        "settings": {\n\
+            "clients": [{"id": "%s"}],\n\
+            "decryption": "none"\n\
+        },\n\
+        "streamSettings": {\n\
+            "network": "tcp"\n\
+        }\n\
+    }],\n\
+    "outbounds": [{\n\
+        "protocol": "freedom"\n\
+    }]\n\
+}' "$PORT" "$UUID" > /etc/xray/config.json
 
-# تحميل Hysteria مباشرة
-RUN curl -L -o hysteria https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64 && \
-    chmod +x hysteria
-
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
+CMD ["xray", "-config", "/etc/xray/config.json"]
