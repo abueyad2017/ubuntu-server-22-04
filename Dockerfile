@@ -1,24 +1,17 @@
-FROM alpine:3.19
+FROM alpine:3.20
 
-# أدوات خفيفة فقط
 RUN apk add --no-cache \
-    bash \
     curl \
+    bash \
     openssl
 
 WORKDIR /app
 
-# تحميل Hysteria (خفيف)
-RUN curl -L -o hysteria https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64 \
-    && chmod +x hysteria \
-    && mv hysteria /usr/local/bin/
+# تحميل Hysteria مباشرة
+RUN curl -L -o hysteria https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64 && \
+    chmod +x hysteria
 
-COPY start.sh /start.sh
-COPY config.template.yaml /config.template.yaml
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-RUN chmod +x /start.sh
-
-# تقليل استهلاك الموارد
-ENV MALLOC_ARENA_MAX=2
-
-CMD ["/start.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
