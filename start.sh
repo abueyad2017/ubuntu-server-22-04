@@ -1,32 +1,35 @@
 #!/bin/bash
 
-echo "Starting Hysteria VPN Server..."
+set -e
 
-# تحميل Hysteria
-curl -Lo hysteria https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64
-chmod +x hysteria
-mv hysteria /usr/local/bin/
+echo "[+] Starting lightweight Hysteria server..."
 
-# إنشاء إعدادات بسيطة
-mkdir -p /etc/hysteria
+# تقليل الضغط على RAM
+ulimit -n 1024
 
-cat > /etc/hysteria/config.yaml <<EOF
-listen: :443
+CERT_DIR="/app/certs"
+mkdir -p $CERT_DIR
 
-auth:
-  type: password
-  password: "change_me_123"
+echo "[+] Generating TLS cert (self-signed)..."
 
-tls:
-  cert: ""
-  key: ""
+openssl req -x509 -newkey rsa:2048 -nodes \
+-keyout $CERT_DIR/key.pem \
+-out $CERT_DIR/cert.pem \
+-days 3650 \
+-subj "/CN=railway.local" \
+>/dev/null 2>&1
 
-masquerade:
-  type: proxy
-  proxy:
-    url: https://www.google.com
-EOF
+echo "[+] Building config..."
 
-echo "Hysteria installed. Waiting..."
+cat config.template.yaml | \
+sed "s|CERT_PATH|$CERT_DIR/cert.pem|g" | \
+sed "s|KEY_PATH|$CERT_DIR/key.pem|g" > /app/config.yaml
 
-hysteria server -c /etc/hysteria/config.yaml
+echo "[+] Launching Hysteria..."
+
+# تشغيل مع حماية من crash restart loop
+while true; do
+  hysteria server -c /app/config.yaml
+  echo "[!] Server crashed, restarting in 2s..."
+  sleep 2
+done
