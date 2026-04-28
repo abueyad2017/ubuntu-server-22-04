@@ -1,0 +1,10 @@
+listen: :443
+
+auth:
+  type: password
+  password: "123456"
+
+masquerade:
+  type: proxy
+  proxy:
+    url: https://www.google.com
