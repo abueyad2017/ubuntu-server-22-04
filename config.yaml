@@ -4,6 +4,9 @@ auth:
   type: password
   password: "123456"
 
+tls:
+  insecure: true
+
 masquerade:
   type: proxy
   proxy:
