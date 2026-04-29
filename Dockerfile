@@ -1,10 +1,8 @@
 FROM teddysun/xray:latest
 
-# إعداد المتغيرات البيئية الافتراضية
 ENV PORT=443
 ENV UUID=12345678-1234-1234-1234-1234567890ab
 
-# إنشاء ملف الإعدادات
 RUN printf '{\n\
     "inbounds": [{\n\
         "port": %s,\n\
